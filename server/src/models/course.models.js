@@ -46,7 +46,7 @@ const courseSchema = new Schema(
       default:
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoeC_2VgaUp-id_Sqlsf0lG1DfmABAF6aTBw&s",
     },
-    thumbnail_id: {
+    thumbnail_s3_key: {
       type: String,
     },
     videos_id: [
@@ -59,7 +59,7 @@ const courseSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    instructorName: {
+    instructor: {
       type: String,
       required: true,
     },

@@ -1,9 +1,11 @@
 import {
   getAllStudentViewCoursesService,
+  getStudentAllPurchsedCourseService,
   getStudentViewCourseDetailsService,
 } from "@/service";
 import {
   useAllStudentViewCoursesState,
+  useStudentAllPurchasedCoursesState,
   useStudentViewCourseDetailsState,
 } from "@/store/user";
 import { useEffect, useState } from "react";
@@ -49,7 +51,11 @@ export const useStudentViewCurrentCourse = (courseId) => {
     setLoading(true);
     const data = await getStudentViewCourseDetailsService(courseId);
     console.log(data);
-    setStudentViewCourseDetails(data?.data);
+    if (data.success) {
+      setStudentViewCourseDetails(data?.data);
+    } else {
+      setStudentViewCourseDetails(null);
+    }
     setLoading(false);
   };
   useEffect(() => {
@@ -58,4 +64,31 @@ export const useStudentViewCurrentCourse = (courseId) => {
     }
   }, [courseId]);
   return { studentViewCourseDetails, loading };
+};
+
+export const useStudentAllPurchasedCourses = () => {
+  const [studentAllPurchasedCoursesState, setStudentAllPurchasedCoursesState] =
+    useStudentAllPurchasedCoursesState();
+  const [loading, setLoading] = useState(false);
+
+  async function fetchStudentAllPurchasedCourses() {
+    setLoading(true);
+    const data = await getStudentAllPurchsedCourseService();
+    if (data.success) {
+      setStudentAllPurchasedCoursesState(data?.data);
+    } else {
+      setStudentAllPurchasedCoursesState([]);
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    fetchStudentAllPurchasedCourses();
+  }, []);
+
+  return {
+    studentAllPurchasedCoursesState,
+    setStudentAllPurchasedCoursesState,
+    loading,
+  };
 };

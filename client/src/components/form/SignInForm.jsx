@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -50,7 +49,6 @@ function SignInForm() {
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              {/* Signing in... */}
             </>
           ) : (
             "Sign in"

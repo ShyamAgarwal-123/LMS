@@ -12,9 +12,10 @@ import AdminPage from "./pages/admin";
 import StudentLayout from "./components/student-view/StudentLayout";
 import StudentHomePage from "./pages/student/home";
 import NotFoundPage from "./pages/not-found";
-import AddNewCoursePage from "./pages/admin/AddNewCoursePage";
+import AddNewCoursePage from "./components/instructor-view/courses/add-new-course/AddNewCoursePage";
 import StudentViewCoursesPage from "./pages/student/courses";
 import StudentViewCourseDetailsPage from "./pages/student/courseDetailsPage";
+import { Toaster } from "./components/ui/toaster";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -23,11 +24,11 @@ const router = createBrowserRouter(
         <Route path="" element={<StudentHomePage />} />
         <Route path="home" element={<StudentHomePage />} />
         <Route path="courses" element={<StudentViewCoursesPage />} />
-        <Route
-          path="course/details/:courseId"
-          element={<StudentViewCourseDetailsPage />}
-        />
       </Route>
+      <Route
+        path="course/details/:courseId"
+        element={<RouteGuard element={<StudentViewCourseDetailsPage />} />}
+      />
       <Route path="auth" element={<RouteGuard element={<AuthPage />} />} />
       <Route path="admin" element={<RouteGuard element={<AdminPage />} />} />
       <Route
@@ -44,7 +45,12 @@ const router = createBrowserRouter(
 );
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <div>
+      <RouterProvider router={router} />
+      <Toaster />
+    </div>
+  );
 }
 
 export default App;

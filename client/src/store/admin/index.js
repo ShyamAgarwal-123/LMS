@@ -161,9 +161,10 @@ export const allAdminCoursesDefault = [
   {
     _id: "",
     title: "",
-    priCung: "",
+    pricing: "",
     students: "",
     revenue: "",
+    isPublished: false,
   },
 ];
 

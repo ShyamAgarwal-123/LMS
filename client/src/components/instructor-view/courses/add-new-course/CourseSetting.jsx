@@ -5,14 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   deleteCourseThumbnailService,
+  deleteS3ObjectService,
+  getPublicS3ObjectUrlService,
+  getUploadPreSignedURLSevice,
   uploadCourseThumbnailService,
+  uploadToS3Service,
 } from "@/service";
 import {
   useCurrentCourseLandingPageState,
   useMediaUploadProgressPercentageState,
   useMediaUploadProgressState,
 } from "@/store/admin";
-import { Upload } from "lucide-react";
 import React from "react";
 
 function CourseSetting({ courseId }) {
@@ -24,44 +27,141 @@ function CourseSetting({ courseId }) {
     useMediaUploadProgressPercentageState();
   async function handleImageUpload(e) {
     const selectedImage = e.target.files[0];
-    if (selectedImage) {
-      const imageFormData = new FormData();
-      imageFormData.append("file", selectedImage);
+    if (!selectedImage) {
+      return;
+    }
+    try {
       setMediaUploadProgress(true);
-      const data = await uploadCourseThumbnailService(
-        imageFormData,
-        courseId,
+      const data = await getUploadPreSignedURLSevice(
+        selectedImage.type,
+        "thumbnails"
+      );
+
+      if (!data.success) {
+        throw new Error(data.message || "Failed to get upload URL");
+      }
+
+      const response = await uploadToS3Service(
+        data.data.uploadURL,
+        selectedImage,
         setMediaUploadProgressPercentage
       );
-      if (data.success) {
-        setCurrentCourseData((prev) => ({
-          ...prev,
-          image: data?.data?.thumbnail || prev.image,
-          imageId: data?.data?.thumbnail_id || prev.imageId,
-        }));
-      } else {
-        console.log(data);
+
+      if (response.status !== 200) {
+        throw new Error("Failed to upload to S3");
       }
+
+      const data3 = await getPublicS3ObjectUrlService(data.data.key);
+
+      if (!data3.success) {
+        throw new Error("Failed to Get Public Url");
+      }
+      const data4 = await uploadCourseThumbnailService(
+        {
+          url: data3.data.publicURL,
+          key: data3.data.key,
+        },
+        courseId
+      );
+      console.log(data4);
+      if (!data4.success) {
+        throw new Error("Failed to Upload Thumbnail in Db, try again");
+      }
+      setCurrentCourseData((prev) => {
+        return {
+          ...prev,
+          image: data3.data.publicURL,
+          imageId: data3.data.key,
+        };
+      });
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Failed to upload thumbnail. Please try again.");
+    } finally {
       setMediaUploadProgress(false);
+      setMediaUploadProgressPercentage(0);
     }
   }
   async function handleReplace(e, index) {
-    const publicId = currentCourseData.imageId;
-    setMediaUploadProgress(true);
-    const data = await deleteCourseThumbnailService(
-      courseId,
-      publicId,
-      setMediaUploadProgressPercentage
-    );
-    if (data.success) {
-      setCurrentCourseData((prev) => ({
-        ...prev,
-        image: data?.data?.image,
-        imageId: "",
-      }));
-    }
-    setMediaUploadProgress(false);
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const s3Key = currentCourseData.imageId;
+
+      try {
+        setMediaUploadProgress(true);
+        const data = await deleteS3ObjectService(s3Key);
+        if (!data.success) {
+          console.error("Failed to delete the Video from S3:", data.message);
+          alert(
+            "Failed to delete old thumbnails from storage. Please try again."
+          );
+          return;
+        }
+
+        const data1 = await getUploadPreSignedURLSevice(
+          file.type,
+          "thumbnails"
+        );
+        if (!data1.success) {
+          throw new Error(data1.message || "Failed to get upload URL");
+        }
+
+        const response = await uploadToS3Service(
+          data1.data.uploadURL,
+          file,
+          setMediaUploadProgressPercentage
+        );
+
+        if (response.status !== 200) {
+          throw new Error("Failed to upload new thumbnails to S3");
+        }
+        const data2 = await getPublicS3ObjectUrlService(data1.data.key);
+
+        if (!data2.success) {
+          throw new Error("Failed to Get Public Url");
+        }
+
+        const data3 = await uploadCourseThumbnailService(
+          {
+            url: data2.data.publicURL,
+            key: data2.data.key,
+          },
+          courseId
+        );
+        console.log(data3);
+        if (!data3.success) {
+          throw new Error("Failed to Upload Thumbnail in Db, try again");
+        }
+        setCurrentCourseData((prev) => ({
+          ...prev,
+          image: data2.data.publicURL,
+          imageId: data2.data.key,
+        }));
+        alert("Successfuly Replaced the course Thumbnail");
+      } catch (error) {
+        console.error("Upload error:", error);
+        alert("Failed to upload thumbnail. Please try again.");
+        const originalData = await getPublicS3ObjectUrlService(s3Key);
+        if (originalData.success) {
+          setCurrentCourseData((prev) => ({
+            ...prev,
+            image: originalData.data.publicURL,
+            imageId: originalData.data.key,
+          }));
+        }
+      } finally {
+        setMediaUploadProgress(false);
+        setMediaUploadProgressPercentage(0);
+      }
+    };
+    input.click();
   }
+  async function handleDelete() {}
 
   return (
     <Card>
@@ -92,7 +192,7 @@ function CourseSetting({ courseId }) {
               />
             )}
           </div>
-          <img src={currentCourseData.image} className="w-full" />
+          <img src={currentCourseData.image} width={"100"} height={"100"} />
         </div>
       </CardContent>
     </Card>

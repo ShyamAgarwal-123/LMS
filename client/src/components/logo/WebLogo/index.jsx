@@ -1,11 +1,14 @@
 import React from "react";
-import { Goal } from "lucide-react";
 
 function LogoComponet({ className }) {
   return (
-    <div className={`flex flex-row gap-2  ${className}`}>
-      <Goal />
-      <span className="text-blue-400 md:block hidden font-medium">LAKSAY</span>
+    <div className={`flex items-center gap-2 ${className}`}>
+      <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+        <span className="text-primary-foreground font-bold font-heading text-sm">
+          L
+        </span>
+      </div>
+      <h1 className="text-xl font-heading font-semibold">Laksay</h1>
     </div>
   );
 }

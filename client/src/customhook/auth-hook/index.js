@@ -1,4 +1,4 @@
-import { getUserService } from "@/service";
+import { getUserService, logoutService } from "@/service";
 import { userDefault, useUserState } from "@/store/user";
 import { useEffect, useState } from "react";
 
@@ -17,16 +17,49 @@ export const useCheckAuthUser = () => {
         });
       } else if (data?.success) {
         checkAuthUser();
-      } else setUserState(userDefault);
+      } else {
+        setUserState(userDefault);
+      }
       setLoading(false);
     } catch (error) {
       console.log(error);
+      setUserState(userDefault);
+      setLoading(false);
     }
   }
 
   useEffect(() => {
     checkAuthUser();
+
+    // Listen for auth refresh failures
+    const handleAuthRefreshFailed = () => {
+      setUserState(userDefault);
+    };
+
+    window.addEventListener("auth-refresh-failed", handleAuthRefreshFailed);
+
+    return () => {
+      window.removeEventListener(
+        "auth-refresh-failed",
+        handleAuthRefreshFailed
+      );
+    };
   }, []);
 
   return { userState, loading };
+};
+
+export const useLogout = () => {
+  const [user, setUser] = useUserState();
+  const handleLogOut = async () => {
+    const data = await logoutService();
+    if (data.success) {
+      setUser(userDefault);
+      alert("Successfully Logout");
+    } else {
+      alert("unable to Logout");
+    }
+  };
+
+  return handleLogOut;
 };

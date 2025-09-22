@@ -1,4 +1,8 @@
-import { getAdminCoursesService, getCourseService } from "@/service";
+import {
+  getAdminCoursesService,
+  getCourseService,
+  getMultipleVideoGETPreSignedURLS,
+} from "@/service";
 import {
   currentCourseDefault,
   useAllAdminCoursesState,
@@ -15,6 +19,7 @@ export const useAllAdminCourses = () => {
 
   const getAdminCourses = async () => {
     setLoading(true);
+    // await new Promise((r) => setTimeout(r, 2000));
     const data = await getAdminCoursesService();
     if (data.success) {
       setAllAdminCoursesState(data.data);
@@ -38,6 +43,17 @@ export const useCurrentCourse = (id) => {
     const response = await getCourseService(courseId);
     if (response.success) {
       const data = response.data;
+      const videos = response.data.videos.map((video) => {
+        return { _id: video._id, s3Key: video.s3Key };
+      });
+
+      const response2 = await getMultipleVideoGETPreSignedURLS(videos);
+      console.log(response2);
+
+      const updatedVideos = data.videos.map((video) => {
+        return { ...video, videoUrl: response2.data[video._id] };
+      });
+
       setCurrentCourseData((prev) => ({
         ...prev,
         courseId: data._id,
@@ -52,11 +68,11 @@ export const useCurrentCourse = (id) => {
           subtitle: data.subtitle,
           welcomeMessage: data.welcomeMessage,
           image: data.thumbnail,
-          imageId: data.thumbnail_id,
+          imageId: data.thumbnail_s3_key,
         },
         isPublished: data.isPublished,
-        courseCurriculumData: data.videos[0]
-          ? data.videos
+        courseCurriculumData: updatedVideos[0]
+          ? updatedVideos
           : currentCourseDefault.courseCurriculumData,
       }));
     }

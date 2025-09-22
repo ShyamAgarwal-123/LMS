@@ -14,20 +14,20 @@ export default function RouteGuard({ authenticated, user, element }) {
     );
   }
   if (!userState.authenticated && !location.pathname.includes("/auth")) {
-    return <Navigate to={"/auth"} />;
+    return <Navigate to={"/auth"} replace />;
   } else if (
     userState.authenticated &&
     userState.user.role !== "admin" &&
     (location.pathname.includes("admin") || location.pathname.includes("/auth"))
   ) {
-    return <Navigate to={"/home"} />;
+    return <Navigate to={"/home"} replace />;
   } else if (
     userState.authenticated &&
     userState.user.role === "admin" &&
     (!location.pathname.includes("admin") ||
       location.pathname.includes("/auth"))
   ) {
-    return <Navigate to={"/admin"} />;
+    return <Navigate to={"/admin"} replace />;
   } else {
     return <>{element}</>;
   }

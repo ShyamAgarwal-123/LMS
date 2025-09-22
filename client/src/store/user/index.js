@@ -23,7 +23,6 @@ export const allStudentViewCoursesAtom = atom({
 
 export const useAllStudentViewCoursesState = () =>
   useRecoilState(allStudentViewCoursesAtom);
-
 // Student view Course Details
 
 export const studentViewCourseDetailsAtom = atom({
@@ -33,3 +32,13 @@ export const studentViewCourseDetailsAtom = atom({
 
 export const useStudentViewCourseDetailsState = () =>
   useRecoilState(studentViewCourseDetailsAtom);
+
+// Student All Purchased Courses state
+
+export const useStudentAllPurchasedCoursesAtom = atom({
+  key: "useStudentAllPurchasedCoursesAtom",
+  default: [],
+});
+
+export const useStudentAllPurchasedCoursesState = () =>
+  useRecoilState(useStudentAllPurchasedCoursesAtom);

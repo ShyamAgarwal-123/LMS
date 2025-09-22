@@ -3,7 +3,7 @@ export const courseCurriculumDefault = [
     title: "",
     videoUrl: "",
     freePreview: false,
-    public_id: "",
+    s3Key: "",
     _id: "",
   },
 ];

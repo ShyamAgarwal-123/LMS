@@ -16,8 +16,11 @@ import { ArrowUpDownIcon, FilterIcon, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import CourseSkeleton from "./CourseSkeleton";
+import NewCourseCard from "@/components/new-course-card";
+import { useSideBarState } from "@/store/common";
 
 function StudentViewCoursesPage() {
+  const [sidebarOpen, setSideBarOpen] = useSideBarState();
   const [sort, setSort] = useState("price-lowtohigh");
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState({});
@@ -62,9 +65,10 @@ function StudentViewCoursesPage() {
     const buildQueryStringForFilters = createSearchParamsHelper(filters);
     setSearchParams(new URLSearchParams(buildQueryStringForFilters));
   }, [filters]);
+
   return (
     <div className="container px-4 sm:px-6 mx-auto max-w-7xl">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mt-1">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-primary mt-1">
         Explore Courses
       </h1>
 
@@ -89,7 +93,7 @@ function StudentViewCoursesPage() {
         {/* Filters Sidebar - Hidden by default below 900px */}
         <aside
           className={`
-          fixed lg2:relative top-0 left-0 z-50 w-full h-full lg2:w-80 
+          fixed lg2:relative top-0 z-30 left-0 w-full h-full lg2:w-80 
           lg2:h-fit bg-white lg2:bg-gradient-to-b from-white/80 to-purple-50/80 
           lg2:backdrop-blur-sm rounded-none lg2:rounded-2xl p-4 lg2:p-8 
           shadow-xl lg2:border border-purple-100/50 overflow-auto
@@ -186,7 +190,7 @@ function StudentViewCoursesPage() {
         {/* Overlay for mobile filters */}
         {showMobileFilters && (
           <div
-            className="fixed inset-0 bg-black/40 z-40 lg2:hidden"
+            className="fixed inset-0 bg-black/40 z-10 lg2:hidden"
             onClick={() => setShowMobileFilters(false)}
           />
         )}
@@ -236,54 +240,7 @@ function StudentViewCoursesPage() {
             ) : allStudentViewCoursesState &&
               allStudentViewCoursesState.length > 0 ? (
               allStudentViewCoursesState.map((courseItem) => (
-                <Card
-                  onClick={() => navigate(`/course/details/${courseItem._id}`)}
-                  className="cursor-pointer hover:shadow-lg transition-shadow duration-300 overflow-hidden group"
-                  key={courseItem?._id}
-                >
-                  <CardContent className="flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-6">
-                    <div className="w-full sm:w-56 h-48 sm:h-40 flex-shrink-0 overflow-hidden rounded-xl">
-                      <img
-                        src={courseItem?.thumbnail}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        alt={courseItem?.title}
-                      />
-                    </div>
-                    <div className="flex-1 space-y-3">
-                      <CardTitle className="text-xl sm:text-2xl font-bold hover:text-purple-600 transition-colors line-clamp-2">
-                        {courseItem?.title}
-                      </CardTitle>
-                      <div className="flex flex-wrap items-center gap-2 text-sm">
-                        <span className="inline-flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-                          {`${courseItem?.videos_id?.length} ${
-                            courseItem?.videos_id.length <= 1
-                              ? "Lecture"
-                              : "Lectures"
-                          }`}
-                        </span>
-                        <span className="hidden sm:inline text-gray-300">
-                          •
-                        </span>
-                        <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                          {courseItem?.level.toUpperCase()} Level
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between sm:justify-start gap-4 mt-2 sm:mt-auto">
-                        <p className="font-bold text-xl sm:text-2xl text-purple-600">
-                          ${courseItem?.pricing}
-                        </p>
-                        <Button
-                          variant="ghost"
-                          className="sm:hidden hover:text-purple-600"
-                          size="sm"
-                        >
-                          View Details →
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <NewCourseCard courseItem={courseItem} key={courseItem._id} />
               ))
             ) : (
               <div className="text-center py-8 md:py-12 bg-white/50 backdrop-blur-sm rounded-xl">
