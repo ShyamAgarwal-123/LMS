@@ -321,7 +321,6 @@ export const getCourse = asyncHandler(async (req, res) => {
           completed_video_ids: 1,
           last_watched_video_id: 1,
           isPurchased: 1,
-          // Simple duration in minutes (e.g., "123m") to keep it simple
           duration: {
             $concat: [
               { $toString: { $ifNull: ["$totalDurationMinutes", 0] } },
